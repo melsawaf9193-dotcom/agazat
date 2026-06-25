@@ -5,24 +5,22 @@
     <title>نظام الإجازات الإداري</title>
     <style>
         :root { --bg: #1a1b1e; --card: #25262b; --text: #e9ecef; --accent: #5c7cfa; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 40px 20px; margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 40px 20px; }
         .card { background: var(--card); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 500px; border: 1px solid #373a40; }
-        h2 { text-align: center; color: var(--accent); margin-bottom: 30px; font-weight: 600; }
+        h2 { text-align: center; color: var(--accent); margin-bottom: 30px; }
         label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #adb5bd; }
-        select, input { width: 100%; padding: 14px; margin-bottom: 20px; background: #2c2e33; border: 1px solid #495057; border-radius: 10px; color: white; box-sizing: border-box; transition: 0.3s; }
-        select:focus, input:focus { border-color: var(--accent); outline: none; }
-        button { width: 100%; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-bottom: 10px; transition: 0.3s; }
+        select, input { width: 100%; padding: 14px; margin-bottom: 20px; background: #2c2e33; border: 1px solid #495057; border-radius: 10px; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-bottom: 10px; transition: 0.3s; }
         .gen-btn { background: var(--accent); color: white; }
         .gen-btn:hover { background: #4263eb; }
         .copy-btn { background: #2b8a3e; color: white; }
-        textarea { width: 100%; height: 250px; margin-top: 25px; padding: 15px; background: #1a1b1e; color: #d1d1d1; border: 1px solid #495057; border-radius: 10px; font-family: 'Consolas', monospace; box-sizing: border-box; resize: none; }
+        textarea { width: 100%; height: 280px; margin-top: 25px; padding: 15px; background: #1a1b1e; color: #d1d1d1; border: 1px solid #495057; border-radius: 10px; font-family: 'Consolas', monospace; resize: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>نظام الإجازات الإداري</h2>
-    
     <label>نوع النموذج</label>
     <select id="formType">
         <option value="إجازة داخلية">إجازة داخلية</option>
@@ -30,27 +28,22 @@
         <option value="مكافأة قيادية">مكافأة قيادية</option>
         <option value="إجازة خارجية">إجازة خارجية</option>
     </select>
-
-    <label>المنصب</label>
+    <label>المنصب (لغير التاجر)</label>
     <select id="role">
         <option value="الفني">الفني</option>
         <option value="المشرف">المشرف</option>
     </select>
-
     <input type="text" id="discordId" placeholder="Discord ID">
     <input type="number" id="basic" placeholder="الرصيد الأساسي">
     <input type="number" id="req" placeholder="المدة المطلوبة">
-
     <button class="gen-btn" onclick="generate()">توليد الطلب</button>
     <button class="copy-btn" onclick="copy()">نسخ النص</button>
-
-    <textarea id="output" readonly placeholder="سيظهر النموذج هنا..."></textarea>
+    <textarea id="output" readonly></textarea>
 </div>
 
 <script>
-    function formatTime(date) {
-        let h = date.getHours();
-        let m = date.getMinutes();
+    function formatTime(d) {
+        let h = d.getHours(), m = d.getMinutes();
         let ampm = h >= 12 ? 'م' : 'ص';
         h = h % 12 || 12;
         m = m < 10 ? '0'+m : m;
@@ -61,8 +54,8 @@
         const type = document.getElementById('formType').value;
         const role = document.getElementById('role').value;
         const id = document.getElementById('discordId').value;
-        const basic = parseInt(document.getElementById('basic').value) || 0;
         const req = parseInt(document.getElementById('req').value) || 0;
+        const basic = parseInt(document.getElementById('basic').value) || 0;
         const remaining = basic - req;
         const start = new Date(Date.now() + 15 * 60000);
         const dateStr = `${start.getFullYear()}/${(start.getMonth()+1).toString().padStart(2, '0')}/${start.getDate().toString().padStart(2, '0')}`;
@@ -78,8 +71,14 @@
         const roleMention = "<@&1149742928953086105>";
         const lawLink = "https://discord.com/channels/1071933157097615480/1071934713524133918/1500101205320536155";
         
-        let template = `***\` ${type} \`*** \n\n***\`${role} المحترم :\`*** <@${id}> \n\n***\` المــــدة : \`${req} ${type === "إجازة خارجية" ? "أيام" : "ساعة"} *** \n***\`الرصيد المتبقي :\`${remaining} ساعة *** \n\n***من تاريخ ${dateStr} ${timeStr}*** \n***الى تاريخ ${endDateStr} ${endTimeStr} *** \n\n\n***يجب قراءة كامل [قوانين الإجازات](${lawLink}) والافادة بالاستلام بوضع رياكشن *** \n\n\`جهلك بالقوانين لا يعفيك من العقوبة\`\n*** \n${roleMention} ***`;
-        
+        let template = "";
+        if (type === "إجازة تاجر") {
+            template = `***\` إجازة تاجر \`*** \n\n***\`التاجر المحترم :\`*** <@${id}> \n\n***\` المــــدة : \`${req} ساعة *** \n\n***من تاريخ ${dateStr} ${timeStr}*** \n***الى تاريخ ${endDateStr} ${endTimeStr} *** \n\n\n***يجب قراءة كامل [قوانين الإجازات](${lawLink}) والافادة بالاستلام بوضع رياكشن *** \n\n\`جهلك بالقوانين لا يعفيك من العقوبة\`\n*** \n${roleMention} ***`;
+        } else if (type === "مكافأة قيادية") {
+            template = `***\` مكافأة قيادية \`*** \n\n***\`${role} المحترم :\`*** <@${id}> \n\n***\` المــــدة : \`${req} ساعة *** \n\n***من تاريخ ${dateStr} ${timeStr}*** \n***الى تاريخ ${endDateStr} ${endTimeStr} *** \n\n\n***يجب قراءة كامل [قوانين الإجازات](${lawLink}) والافادة بالاستلام بوضع رياكشن *** \n\n\`جهلك بالقوانين لا يعفيك من العقوبة\`\n*** \n***\`توقيع و اعتماد :\`*** \n${roleMention} ***`;
+        } else {
+            template = `***\` ${type} \`*** \n\n***\`${role} المحترم :\`*** <@${id}> \n\n***\` المــــدة : \`${req} ${type === "إجازة خارجية" ? "أيام" : "ساعة"} *** \n***\`الرصيد المتبقي :\`${remaining} ساعة *** \n\n***من تاريخ ${dateStr} ${timeStr}*** \n***الى تاريخ ${endDateStr} ${endTimeStr} *** \n\n\n***يجب قراءة كامل [قوانين الإجازات](${lawLink}) والافادة بالاستلام بوضع رياكشن *** \n\n\`جهلك بالقوانين لا يعفيك من العقوبة\`\n*** \n${roleMention} ***`;
+        }
         document.getElementById('output').value = template;
     }
 
@@ -87,7 +86,6 @@
         const out = document.getElementById("output");
         out.select();
         document.execCommand("copy");
-        alert("تم النسخ بنجاح!");
     }
 </script>
 </body>
